@@ -1,3 +1,5 @@
+######################### Function to merge testing and training datasets#################################################
+
 
 mergeDatasets <- function(X_train, y_train, X_test, y_test, Subject_train, Subject_test){
 	
@@ -9,7 +11,8 @@ mergeDatasets <- function(X_train, y_train, X_test, y_test, Subject_train, Subje
 	return(merge_data)
 	
 }
-
+###############################################################################################################################
+################################## Function to extract the desired columns(mean and standard deviation )#####################
 Sd_Mean <- function(merged_data, variable){
 	i=1
 	index <- NULL
@@ -42,6 +45,9 @@ Sd_Mean <- function(merged_data, variable){
 	colnames(merged_data) <- c(as.character(variable[index,2]), "Activity_Names", "Subject")
 	return(merged_data)
 }
+
+#######################################################################################################################
+################# Function to calculate mean of the columns according to activity names and Subjects#######################
 avgVar <- function(data_frame){
 	output <- NULL
 	for(i in 1:30){
@@ -79,7 +85,7 @@ avgVar <- function(data_frame){
 	
 	return(output)
 }
-
+################## Function to give Activity names ######################################
 activityNames <- function(data_frame){
 	cols <- (ncol(data_frame) -1)
 	data_frame[,cols] <- as.character(data_frame[,cols])
@@ -93,10 +99,14 @@ activityNames <- function(data_frame){
 	return(data_frame)
 	
 }
+##################################################################################################################
 
-
+##### requred libraries incuded#######
 library(plyr)
 library(dplyr)
+#######################################
+
+####### Tables being read###################
 Xtrain <- read.table("./UCI HAR Dataset/train/X_train.txt")
 ytrain <- read.table("./UCI HAR Dataset/train/y_train.txt")
 Xtest <- read.table("./UCI HAR Dataset/test/X_test.txt")
@@ -104,17 +114,19 @@ ytest <- read.table("./UCI HAR Dataset/test/y_test.txt")
 S_train <- read.table("./UCI HAR Dataset/train/subject_train.txt")
 S_test <- read.table("./UCI HAR Dataset/test/subject_test.txt")
 tempvariable <- read.table("./UCI HAR Dataset/features.txt")
+############################################################
 
 
+###################Functions being called ###########################
 x <- mergeDatasets(Xtrain, ytrain, Xtest, ytest, S_train, S_test)
 z <- Sd_Mean(x,tempvariable)
 b <- avgVar(z)
 y <- activityNames(b)
-
+#####################################################################
 colnames(y)[80] <- "Activity_Types"
 colnames(y)[81] <- "Subjects"
 
-
+############## Final output file ############################
 
 write.table(y,"tidy_dataSet.txt",row.name=F)
 
