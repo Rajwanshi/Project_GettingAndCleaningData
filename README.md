@@ -6,7 +6,7 @@ Steps to run run_analysis.R file :-
 2. Save the run_analysis.R file in the same directory as the extracted folder from the zip file 
 3. Make sure you have 3.3.0 or higher version of R installed on your computer 
 4. You should have dplyr and plyr libraries installed into your computer  
-5. Run the R files in the R terminal (cli), the output tiny.txt file will be created in the same directory containing the clean data
+5. Run the R files in the R terminal (cli), the output tidy_dataSet.txt file will be created in the same directory containing the clean data
 
 
 
