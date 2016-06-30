@@ -1,132 +1,111 @@
-######################### Function to merge testing and training datasets#################################################
+###########Function to merge the required data ####################################
 
-
-mergeDatasets <- function(X_train, y_train, X_test, y_test, Subject_train, Subject_test){
+merge_datasets <- function(data_X_train, data_y_train, data_X_test, data_y_test, Subject_train, Subject_test){
 	
-	train <- cbind(X_train, y_train, Subject_train)
-	test <- cbind(X_test, y_test, Subject_test)
-	merge_data <- rbind(test, train)
-	
-	for(l in 1:ncol(merge_data)){merge_data[,l] <- as.numeric(as.character(merge_data[,l]))}
+	data_train <- cbind(data_y_train, Subject_train, data_X_train)
+	data_test <- cbind(data_y_test, Subject_test, data_X_test)
+	merge_data <- rbind(data_test, data_train)
 	return(merge_data)
 	
 }
-###############################################################################################################################
-################################## Function to extract the desired columns(mean and standard deviation )#####################
-Sd_Mean <- function(merged_data, variable){
-	i=1
-	index <- NULL
-	while(i <= 161){
-		index <- c(index, i:(i+5))
-		i <- i+40
-	}
-	i=201
-	while(i <= 253){
-		index <- c(index, i:(i+1))
-		i <- i+13
-		
-	}
-	
-	i=266
-	while(i <= 424){
-		index <- c(index, i:(i+5))
-		i <- i+79
-	
-	}
-	i=503
-	while(i <= 542){
-		index <- c(index, i:(i+1))
-		i <- i+13
-	
-	}
-	index <- c(index, 294:296,373:375,452:454,513,526,539,552)
-	index_new <- c(index,562,563)
-	merged_data <- merged_data[, index_new]
-	colnames(merged_data) <- c(as.character(variable[index,2]), "Activity_Names", "Subject")
-	return(merged_data)
-}
 
-#######################################################################################################################
-################# Function to calculate mean of the columns according to activity names and Subjects#######################
-avgVar <- function(data_frame){
-	output <- NULL
+######################################################
+
+
+##################Function to calculate means of the required columns######################
+
+avg_variables <- function(data_frame){
+	
+	
+	Output <- NULL
 	for(i in 1:30){
-		tem_Data <- data_frame[data_frame$Subject == i,]
+		data_temp <- data_frame[data_frame$Subject == i,]
 		for(j in 1:6){
 			if(j==1){
-				data_temp2 <- tem_Data[tem_Data$Activity_Names==1,]
-				temp <- colMeans(data_temp2[,1:79])
+				data_temp2 <- data_temp[data_temp$Activity_Names==1,]
+				temp <- colMeans(data_temp2[,3:81])
 				act_name <- "WALKING"
 			} else if(j==2){
-				data_temp2 <- tem_Data[tem_Data$Activity_Names==2,]
-				temp <- colMeans(data_temp2[,1:79])
+				data_temp2 <- data_temp[data_temp$Activity_Names==2,]
+				temp <- colMeans(data_temp2[,3:81])
 				act_name <- "WALKING_UPSTAIRS"
 			} else if(j==3){
-				data_temp2 <- tem_Data[tem_Data$Activity_Names==3,]
-				temp <- colMeans(data_temp2[,1:79])
+				data_temp2 <- data_temp[data_temp$Activity_Names==3,]
+				temp <- colMeans(data_temp2[,3:81])
 				act_name <- "WALKING_DOWNSTAIRS"
 			} else if(j==4){
-				data_temp2 <- tem_Data[tem_Data$Activity_Names==4,]
-				temp <- colMeans(data_temp2[,1:79])
+				data_temp2 <- data_temp[data_temp$Activity_Names==4,]
+				temp <- colMeans(data_temp2[,3:81])
 				act_name <- "SITTING"
 			} else if(j==5){
-				data_temp2 <- tem_Data[tem_Data$Activity_Names==5,]
-				temp <- colMeans(data_temp2[,1:79])
+				data_temp2 <- data_temp[data_temp$Activity_Names==5,]
+				temp <- colMeans(data_temp2[,3:81])
 				act_name <- "STANDING"
 			} else if(j==6){
-				data_temp2 <- tem_Data[tem_Data$Activity_Names==6,]
-				temp <- colMeans(data_temp2[,1:79])
+				data_temp2 <- data_temp[data_temp$Activity_Names==6,]
+				temp <- colMeans(data_temp2[,3:81])
 				act_name <- "LAYING"
 			}
-			temp <- c(temp, act_name, i)
-			output <- rbind(output,temp) 
+			temp <- c(act_name, i, temp)
+			Output <- rbind(Output,temp) 
 		}
 	}
-	
-	return(output)
+	colnames(Output)[1] <- "Activity Names"
+	colnames(Output)[2] <- "Subject"
+	return(Output)
 }
-################## Function to give Activity names ######################################
-activityNames <- function(data_frame){
-	cols <- (ncol(data_frame) -1)
-	data_frame[,cols] <- as.character(data_frame[,cols])
-	data_frame[,cols] <- sub("1","WALKING",data_frame[,cols])
-	data_frame[,cols] <- sub("2","WALKING_UPSTAIRS",data_frame[,cols])
-	data_frame[,cols] <- sub("3","WALKING_DOWNSTAIRS",data_frame[,cols])
-	data_frame[,cols] <- sub("4","SITTING",data_frame[,cols])
-	data_frame[,cols] <- sub("5","STANDING",data_frame[,cols])
-	data_frame[,cols] <- sub("6","LAYING",data_frame[,cols])
-	
-	return(data_frame)
-	
-}
-##################################################################################################################
+######################################################
 
-##### requred libraries incuded#######
+
+#  Using Regular Expressions in 'grep' to extract variables which represent either Mean or
+#  Standard Deviation as is desired in the exercise (Point 2)
+
+mean_sd_extract <- function(mergedData, variable_names){
+
+	reqVariables <- grep(".*mean.*|.*std.*", variable_names[,2])	
+	reqVariables <- reqVariables +2
+	mergedData <- mergedData[,c(1,2,reqVariables)]
+	temp_var_names <- variable_names[(reqVariables-2),2] 
+	temp_var_names<- gsub("-mean","Mean", temp_var_names)
+	temp_var_names<- gsub("-std","StdDev", temp_var_names)
+	temp_var_names<- gsub("[-()]","", temp_var_names)
+	colnames(mergedData) <- c("Activity_Names", "Subject",temp_var_names)
+	return(mergedData)
+}
+######################################################
+
+
+
+######  Libraries used#######
+library(reshape2)
 library(plyr)
 library(dplyr)
-#######################################
 
-####### Tables being read###################
-Xtrain <- read.table("./UCI HAR Dataset/train/X_train.txt")
-ytrain <- read.table("./UCI HAR Dataset/train/y_train.txt")
-Xtest <- read.table("./UCI HAR Dataset/test/X_test.txt")
-ytest <- read.table("./UCI HAR Dataset/test/y_test.txt")
-S_train <- read.table("./UCI HAR Dataset/train/subject_train.txt")
-S_test <- read.table("./UCI HAR Dataset/test/subject_test.txt")
-tempvariable <- read.table("./UCI HAR Dataset/features.txt")
-############################################################
+################################
 
 
-###################Functions being called ###########################
-x <- mergeDatasets(Xtrain, ytrain, Xtest, ytest, S_train, S_test)
-z <- Sd_Mean(x,tempvariable)
-b <- avgVar(z)
-y <- activityNames(b)
-#####################################################################
-colnames(y)[80] <- "Activity_Types"
-colnames(y)[81] <- "Subjects"
+#######################  Reading files as tables ##################################3
+X_train <- read.table("./UCI HAR Dataset/train/X_train.txt")
+y_train <- read.table("./UCI HAR Dataset/train/y_train.txt")
+X_test <- read.table("./UCI HAR Dataset/test/X_test.txt")
+y_test <- read.table("./UCI HAR Dataset/test/y_test.txt")
+Sub_train <- read.table("./UCI HAR Dataset/train/subject_train.txt")
+Sub_test <- read.table("./UCI HAR Dataset/test/subject_test.txt")
+temp_variable <- read.table("./UCI HAR Dataset/features.txt")
+activity_names <- read.table("./UCI HAR Dataset/activity_labels.txt") 
 
-############## Final output file ############################
+##############################################################################
 
-write.table(y,"tidy_dataSet.txt",row.name=F)
+x <- merge_datasets(X_train, y_train, X_test, y_test, Sub_train, Sub_test)
+z <- mean_sd_extract(x,temp_variable)
+b <- avg_variables(z)
 
+###################### Creating the final file ###############################
+ 
+write.table(b,"tidy_dataSet.txt", row.name=FALSE)
+
+
+
+
+
+############################END OF CODE#####################################
